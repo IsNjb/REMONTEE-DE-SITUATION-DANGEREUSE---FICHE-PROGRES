@@ -1,0 +1,668 @@
+window.APP_CONFIG = {
+  mode: "demo",
+  supabaseUrl: "REMPLACER_PAR_URL_SUPABASE",
+  supabaseAnonKey: "REMPLACER_PAR_CLE_ANON_SUPABASE",
+  adminCode: "QSE2026",
+  appName: "SERINDUS – Remontées terrain"
+};
+
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#006b73">
+  <meta name="description" content="Application SERINDUS de remontées terrain QSE">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Remontées terrain | SERINDUS</title>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Accueil">
+      <span class="brand-mark">S</span>
+      <span><strong>SERINDUS</strong><small>Remontées terrain QSE</small></span>
+    </a>
+    <a class="admin-link" href="admin.html">Espace QSE</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">FICHE PROGRÈS NUMÉRIQUE</p>
+      <h1>Signaler une situation terrain</h1>
+      <p>Idée d’amélioration, situation dangereuse, non-conformité, réclamation ou bonne pratique.</p>
+    </section>
+
+    <ol class="steps" aria-label="Progression">
+      <li class="active"><span>1</span><b>Contexte</b></li>
+      <li><span>2</span><b>Constat</b></li>
+      <li><span>3</span><b>Risque</b></li>
+      <li><span>4</span><b>Actions</b></li>
+      <li><span>5</span><b>Envoi</b></li>
+    </ol>
+
+    <form id="reportForm" novalidate>
+      <section class="form-page active" data-page="1">
+        <div class="card">
+          <div class="section-title"><span>1</span><div><h2>Identification</h2><p>Informations sur le déclarant et le lieu.</p></div></div>
+          <div class="grid two">
+            <label>Nom et prénom <em>*</em><input name="reporter_name" autocomplete="name" required></label>
+            <label>Société <em>*</em>
+              <select name="company" required>
+                <option value="">Sélectionner</option><option>SETIA</option><option>SASI</option>
+                <option>SIMEC</option><option>TILCO</option><option>RICOM</option>
+                <option>PROCESS</option><option>OBTEL</option><option>Autre</option>
+              </select>
+            </label>
+            <label>Nom du client <em>*</em><input name="client_name" required></label>
+            <label>Chantier / site <em>*</em><input name="site_name" required></label>
+            <label class="wide">Zone précise<input name="location_detail" placeholder="Ex. nacelle, atelier, local électrique…"></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-page" data-page="2">
+        <div class="card">
+          <div class="section-title"><span>2</span><div><h2>Constat</h2><p>Décrivez ce que vous avez observé.</p></div></div>
+          <fieldset>
+            <legend>Type d’événement <em>*</em></legend>
+            <div class="choice-grid">
+              <label><input type="radio" name="event_type" value="Idée d’amélioration" required><span>💡 Idée d’amélioration</span></label>
+              <label><input type="radio" name="event_type" value="Situation dangereuse"><span>⚠️ Situation dangereuse</span></label>
+              <label><input type="radio" name="event_type" value="Non-conformité"><span>⛔ Non-conformité</span></label>
+              <label><input type="radio" name="event_type" value="Réclamation client"><span>💬 Réclamation client</span></label>
+              <label><input type="radio" name="event_type" value="Bonne pratique"><span>✅ Bonne pratique</span></label>
+              <label><input type="radio" name="event_type" value="Presqu’accident"><span>🛑 Presqu’accident</span></label>
+              <label><input type="radio" name="event_type" value="Environnement"><span>🌱 Environnement</span></label>
+              <label><input type="radio" name="event_type" value="Matériel défectueux"><span>🔧 Matériel défectueux</span></label>
+            </div>
+          </fieldset>
+          <div class="grid two">
+            <label>Qui est concerné ?<input name="who" placeholder="Personne, équipe, entreprise…"></label>
+            <label>Quand ?<input name="observed_at" type="datetime-local"></label>
+            <label class="wide">Quoi ? <em>*</em><textarea name="what" required placeholder="Décrivez précisément le fait observé"></textarea></label>
+            <label class="wide">Comment ?<textarea name="how" placeholder="Dans quelles circonstances ?"></textarea></label>
+          </div>
+          <div class="upload-box">
+            <label for="photos"><strong>Ajouter des photos</strong><small>Jusqu’à 5 photos. Elles seront compressées avant l’envoi.</small></label>
+            <input id="photos" name="photos" type="file" accept="image/*" capture="environment" multiple>
+            <button type="button" class="secondary" id="photoButton">📷 Prendre ou choisir des photos</button>
+            <div id="photoPreview" class="photo-preview"></div>
+            <label class="check"><input type="checkbox" name="photo_forbidden"><span>Photo impossible ou interdite par le client</span></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-page" data-page="3">
+        <div class="card">
+          <div class="section-title"><span>3</span><div><h2>Perception du risque</h2><p>Évaluez la gravité et la probabilité.</p></div></div>
+          <div class="grid two risk-inputs">
+            <label>Gravité <em>*</em>
+              <select name="severity" required>
+                <option value="">Sélectionner</option><option value="1">1 – Faible</option>
+                <option value="2">2 – Moyenne</option><option value="3">3 – Grave</option>
+                <option value="4">4 – Très grave</option>
+              </select>
+              <small>Conséquence potentielle si l’événement se produit.</small>
+            </label>
+            <label>Probabilité <em>*</em>
+              <select name="probability" required>
+                <option value="">Sélectionner</option><option value="1">1 – Très improbable</option>
+                <option value="2">2 – Improbable</option><option value="3">3 – Probable</option>
+                <option value="4">4 – Très probable</option>
+              </select>
+              <small>Possibilité que l’événement se produise ou se reproduise.</small>
+            </label>
+          </div>
+          <div id="riskResult" class="risk-result neutral">
+            <span>Priorité</span><strong>À calculer</strong><small>Sélectionnez les deux critères.</small>
+          </div>
+          <div class="matrix" aria-label="Matrice de risque 4 par 4">
+            <div class="matrix-label">Gravité ↑</div>
+            <div class="matrix-grid" id="matrixGrid"></div>
+            <div class="matrix-label bottom">Probabilité →</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-page" data-page="4">
+        <div class="card">
+          <div class="section-title"><span>4</span><div><h2>Actions et améliorations</h2><p>Précisez ce qui a été fait immédiatement.</p></div></div>
+          <fieldset>
+            <legend>Actions immédiates mises en place</legend>
+            <div class="checks">
+              <label><input type="checkbox" name="immediate_actions" value="Arrêt des travaux"><span>Arrêt des travaux</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Balisage / sécurisation"><span>Balisage / sécurisation</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Matériel mis hors service"><span>Matériel mis hors service</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Chef d’équipe informé"><span>Chef d’équipe informé</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Client informé"><span>Client informé</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Aucune action possible"><span>Aucune action possible</span></label>
+            </div>
+          </fieldset>
+          <div class="grid">
+            <label>Détail des actions immédiates <em>*</em><textarea name="action_details" required></textarea></label>
+            <label>Personne informée<input name="person_informed" placeholder="Nom ou fonction"></label>
+            <label class="danger-question">Le danger est-il toujours présent ? <em>*</em>
+              <select name="danger_present" required><option value="">Sélectionner</option><option value="true">Oui</option><option value="false">Non</option></select>
+            </label>
+            <label>Propositions d’amélioration<textarea name="improvement_proposal" placeholder="Quelle solution proposez-vous pour éviter la répétition ?"></textarea></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-page" data-page="5">
+        <div class="card">
+          <div class="section-title"><span>5</span><div><h2>Vérification et envoi</h2><p>Contrôlez les informations avant validation.</p></div></div>
+          <div id="summary" class="summary"></div>
+          <label class="check consent"><input type="checkbox" name="accuracy" required><span>Je confirme l’exactitude des informations transmises. <em>*</em></span></label>
+          <p class="privacy">Les données sont utilisées uniquement pour le traitement et le suivi des remontées QSE.</p>
+          <button class="primary submit" type="submit">Envoyer la remontée</button>
+        </div>
+      </section>
+
+      <div class="form-nav">
+        <button type="button" class="secondary" id="prevButton" hidden>Retour</button>
+        <button type="button" class="primary" id="nextButton">Continuer</button>
+      </div>
+    </form>
+
+    <section id="success" class="success card" hidden>
+      <div class="success-icon">✓</div>
+      <h2>Remontée enregistrée</h2>
+      <p>Merci pour votre contribution à la prévention.</p>
+      <div class="report-number" id="reportNumber"></div>
+      <button class="primary" id="newReport">Faire une autre remontée</button>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
+{
+  "name": "SERINDUS – Remontées terrain",
+  "short_name": "Remontées QSE",
+  "description": "Application de remontées terrain QSE",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f7",
+  "theme_color": "#006b73",
+  "icons": [
+    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}
+
+# SERINDUS – Remontées terrain QSE
+
+Application web installable (PWA) inspirée de la fiche progrès SASI.
+
+## 1. Tester immédiatement
+
+Ouvrir `index.html` avec un serveur local. Le mode `demo` enregistre les remontées
+uniquement dans le navigateur utilisé. Le code administrateur de démonstration
+est `QSE2026`.
+
+## 2. Publier sur GitHub Pages
+
+1. Créer un dépôt GitHub public nommé `remontees-terrain`.
+2. Déposer tous les fichiers de ce dossier à la racine du dépôt.
+3. Ouvrir **Settings > Pages**.
+4. Dans **Build and deployment**, choisir **Deploy from a branch**.
+5. Sélectionner la branche `main` et le dossier `/ (root)`.
+6. Enregistrer et attendre l’apparition du lien GitHub Pages.
+
+## 3. Créer le stockage Supabase
+
+1. Créer un projet sur https://supabase.com.
+2. Ouvrir **SQL Editor**, créer une requête et coller `supabase.sql`.
+3. Exécuter la requête.
+4. Dans **Project Settings > API**, copier :
+   - l’URL du projet ;
+   - la clé publique `anon`.
+5. Modifier `config.js` :
+
+```js
+mode: "supabase",
+supabaseUrl: "https://VOTRE-PROJET.supabase.co",
+supabaseAnonKey: "VOTRE_CLE_ANON"
+```
+
+La clé `anon` est prévue pour le navigateur. Ne jamais mettre la clé
+`service_role` dans ce projet.
+
+## 4. Sécurité avant diffusion
+
+Le formulaire peut déposer des remontées, mais la lecture des remontées reste
+bloquée par Supabase. L’espace QSE en mode démonstration ne doit pas être utilisé
+en production : un simple code placé dans `config.js` n’est pas un vrai contrôle
+d’accès.
+
+Avant la diffusion générale, il faut ajouter l’authentification Supabase pour les
+administrateurs, puis une règle autorisant uniquement ces comptes à consulter et
+modifier les remontées.
+
+## 5. Installer sur un smartphone
+
+- Android/Chrome : menu ⋮ > **Ajouter à l’écran d’accueil**.
+- iPhone/Safari : bouton Partager > **Sur l’écran d’accueil**.
+
+## Contenu
+
+- `index.html` : formulaire collaborateur.
+- `admin.html` : tableau de suivi QSE.
+- `config.js` : mode et paramètres.
+- `supabase.sql` : base de données et stockage photo.
+- `manifest.webmanifest` et `sw.js` : installation PWA et cache.
+
+:root{--teal:#006b73;--teal-dark:#004e55;--teal-pale:#e7f5f4;--ink:#17212b;--muted:#64717d;--line:#d8e0e3;--bg:#f4f7f7;--red:#d92d3c;--orange:#ed9b19;--green:#43a047;--white:#fff;--shadow:0 8px 28px rgba(18,43,48,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif;line-height:1.5}.topbar{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(20px,calc((100vw - 1080px)/2));position:sticky;top:0;z-index:10}.brand{display:flex;gap:11px;align-items:center;color:var(--ink);text-decoration:none}.brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--teal);color:#fff;font-size:25px;font-weight:800}.brand strong,.brand small{display:block}.brand small{color:var(--muted);font-size:12px}.admin-link{color:var(--teal);font-weight:700;text-decoration:none;font-size:14px}main{max-width:900px;margin:auto;padding:35px 20px 70px}.hero{text-align:center;margin:10px auto 28px}.hero h1,.admin-main h1{font-size:clamp(28px,5vw,44px);line-height:1.08;margin:6px 0 10px}.hero p{color:var(--muted);margin:auto;max-width:680px}.eyebrow{color:var(--teal);font-size:12px;font-weight:800;letter-spacing:.13em;margin:0}.steps{display:flex;justify-content:center;list-style:none;padding:0;margin:0 0 26px}.steps li{width:18%;position:relative;text-align:center;color:#9ca8ad;font-size:12px}.steps li:not(:last-child):after{content:"";position:absolute;height:2px;background:var(--line);left:56%;right:-44%;top:17px}.steps span{width:35px;height:35px;margin:auto auto 6px;border-radius:50%;display:grid;place-items:center;background:#e2e8ea;color:#6c777c;font-weight:800;position:relative;z-index:1}.steps .active span,.steps .done span{background:var(--teal);color:#fff}.steps .done:not(:last-child):after{background:var(--teal)}.steps .active b{color:var(--teal)}.steps b{display:block}.card{background:#fff;border:1px solid #e1e7e8;border-radius:18px;padding:clamp(20px,4vw,34px);box-shadow:var(--shadow)}.form-page{display:none}.form-page.active{display:block}.section-title{display:flex;gap:15px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:24px}.section-title>span{width:42px;height:42px;flex:none;display:grid;place-items:center;background:var(--teal-pale);color:var(--teal);border-radius:12px;font-size:20px;font-weight:800}.section-title h2{margin:0;font-size:22px}.section-title p{margin:2px 0 0;color:var(--muted);font-size:14px}.grid{display:grid;gap:20px}.grid.two{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}label,legend{font-weight:700;font-size:14px}label small{display:block;color:var(--muted);font-weight:400;margin-top:6px}em{color:var(--red);font-style:normal}input,select,textarea{display:block;width:100%;margin-top:7px;border:1px solid #cbd5d8;border-radius:10px;padding:13px 14px;background:#fff;color:var(--ink);font:inherit;outline:none}textarea{min-height:108px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,107,115,.12)}fieldset{border:0;padding:0;margin:0 0 25px}.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.choice-grid input{position:absolute;opacity:0}.choice-grid span{display:block;border:1px solid var(--line);border-radius:11px;padding:13px;background:#fff;font-weight:600}.choice-grid input:checked+span{background:var(--teal-pale);border-color:var(--teal);color:var(--teal-dark);box-shadow:0 0 0 1px var(--teal)}.upload-box{margin-top:24px;border:2px dashed #b8c8cb;border-radius:14px;padding:20px;text-align:center;background:#fbfdfd}.upload-box label small{margin-bottom:12px}.upload-box>input{display:none}.photo-preview{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:15px}.photo-preview div{width:88px;height:88px;position:relative}.photo-preview img{width:100%;height:100%;object-fit:cover;border-radius:10px}.photo-preview button{position:absolute;right:-6px;top:-6px;border:0;border-radius:50%;background:var(--red);color:#fff;width:23px;height:23px}.check{display:flex!important;align-items:flex-start;gap:9px;margin-top:16px;text-align:left;font-weight:500}.check input{width:auto;margin:4px 0 0}.risk-inputs{margin-bottom:22px}.risk-result{border-radius:14px;padding:18px;display:flex;align-items:center;gap:16px;color:#fff}.risk-result span{font-size:12px;text-transform:uppercase;letter-spacing:.1em}.risk-result strong{font-size:22px}.risk-result small{margin-left:auto}.risk-result.neutral{background:#6e7b81}.priority-1{background:var(--red)!important;color:#fff}.priority-2{background:var(--orange)!important;color:#fff}.priority-3{background:var(--green)!important;color:#fff}.matrix{max-width:430px;margin:25px auto 0}.matrix-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.matrix-cell{height:42px;display:grid;place-items:center;border-radius:5px;font-weight:800}.matrix-cell.selected{outline:4px solid var(--ink);outline-offset:1px}.matrix-label{color:var(--muted);font-size:12px;font-weight:700;margin-bottom:5px}.matrix-label.bottom{text-align:right;margin-top:5px}.checks{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.checks label{display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:11px;border-radius:10px;font-weight:500}.checks input{width:auto;margin:0}.danger-question{background:#fff5f4;border:1px solid #f3ceca;border-radius:12px;padding:15px}.summary dl{margin:0}.summary dl div{display:grid;grid-template-columns:130px 1fr;border-bottom:1px solid var(--line);padding:12px 0}.summary dt{color:var(--muted);font-size:13px}.summary dd{margin:0}.privacy{font-size:12px;color:var(--muted)}button{cursor:pointer;font:inherit;font-weight:700;border-radius:10px;padding:12px 18px;border:0}.primary{background:var(--teal);color:#fff}.primary:hover{background:var(--teal-dark)}.secondary{background:#fff;border:1px solid #b9c6c9;color:var(--teal-dark)}button:disabled{opacity:.6}.form-nav{display:flex;justify-content:space-between;margin-top:18px}.form-nav #nextButton{margin-left:auto}.submit{width:100%;font-size:16px;margin-top:10px}.success{text-align:center;margin-top:40px}.success-icon{width:70px;height:70px;margin:auto;display:grid;place-items:center;border-radius:50%;background:var(--green);color:#fff;font-size:38px}.report-number{display:inline-block;background:var(--teal-pale);color:var(--teal-dark);border-radius:9px;padding:10px 15px;font-weight:800;margin:10px 0 22px}.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,120px);background:#17212b;color:#fff;padding:12px 18px;border-radius:10px;z-index:100;transition:.25s;box-shadow:var(--shadow)}.toast.show{transform:translate(-50%,0)}.admin-main{max-width:1100px}.login-card{max-width:480px;margin:60px auto}.login-card button{width:100%;margin-top:15px}.demo-note{font-size:12px;color:var(--muted)}.dashboard-head{display:flex;justify-content:space-between;align-items:center}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}.stats article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}.stats span{display:block;color:var(--muted);font-size:13px}.stats strong{font-size:30px}.stats .red{border-top:4px solid var(--red)}.stats .orange{border-top:4px solid var(--orange)}.filters{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end;padding:18px;margin-bottom:16px}.reports-list{display:grid;gap:14px}.report-card{padding:22px}.report-top{display:flex;justify-content:space-between}.badge,.status{border-radius:99px;padding:5px 10px;font-size:12px;font-weight:800}.status{background:#eef2f3;color:#536168}.report-card h2{margin:13px 0 0}.report-ref{font-size:12px;color:var(--teal);font-weight:800}.report-meta{display:flex;flex-wrap:wrap;gap:15px;color:var(--muted);font-size:13px;margin:14px 0}.empty{text-align:center}dialog{border:0;border-radius:18px;max-width:700px;width:calc(100% - 30px);padding:30px;box-shadow:0 20px 80px rgba(0,0,0,.3)}dialog::backdrop{background:rgba(9,25,29,.65)}.dialog-close{position:absolute;right:12px;top:10px;background:transparent;font-size:28px}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.detail-grid div{background:var(--bg);padding:12px;border-radius:9px}.detail-grid b,.detail-grid span{display:block}.detail-grid span{font-size:14px;margin-top:4px}
+@media(max-width:700px){.topbar{padding:0 15px}.admin-link{font-size:12px}.steps b{display:none}.steps li{width:20%}.grid.two,.choice-grid,.checks,.detail-grid{grid-template-columns:1fr}.wide{grid-column:auto}.card{border-radius:14px}.risk-result{align-items:flex-start;flex-direction:column;gap:2px}.risk-result small{margin:0}.summary dl div{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr}.dashboard-head{align-items:flex-start}.report-meta{display:grid;gap:4px}}
+
+-- À exécuter dans Supabase > SQL Editor.
+create extension if not exists pgcrypto;
+create sequence if not exists public.report_reference_seq start 1;
+
+create table if not exists public.reports (
+  id uuid primary key default gen_random_uuid(),
+  reference text unique default (
+    'RT-' || extract(year from now())::text || '-' ||
+    lpad(nextval('public.report_reference_seq')::text, 4, '0')
+  ),
+  created_at timestamptz not null default now(),
+  reporter_name text not null,
+  company text not null,
+  client_name text not null,
+  site_name text not null,
+  location_detail text,
+  event_type text not null,
+  who text,
+  observed_at timestamptz,
+  what text not null,
+  how text,
+  photo_forbidden text,
+  severity integer not null check (severity between 1 and 4),
+  probability integer not null check (probability between 1 and 4),
+  priority integer not null check (priority between 1 and 3),
+  immediate_actions jsonb default '[]'::jsonb,
+  action_details text not null,
+  person_informed text,
+  danger_present boolean not null,
+  improvement_proposal text,
+  photo_paths jsonb default '[]'::jsonb,
+  status text not null default 'Nouvelle'
+);
+
+alter table public.reports enable row level security;
+
+-- Première version : dépôt public de remontées.
+create policy "public_can_insert_reports" on public.reports
+for insert to anon with check (true);
+
+-- L'espace QSE nécessite une authentification Supabase avant la diffusion réelle.
+-- Ne pas créer une règle de lecture publique des remontées.
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('report-photos', 'report-photos', false, 5242880, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do nothing;
+
+create policy "public_can_upload_report_photos" on storage.objects
+for insert to anon with check (bucket_id = 'report-photos');
+
+const CACHE = "qse-remontees-v1";
+const ASSETS = ["./","index.html","admin.html","styles.css","config.js","app.js","admin.js","manifest.webmanifest","icons/icon.svg","icons/icon-192.png","icons/icon-512.png"];
+self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
+self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))));
+self.addEventListener("fetch", event => {
+  if (event.request.method !== "GET") return;
+  event.respondWith(fetch(event.request).then(response => {
+    const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(event.request, copy)); return response;
+  }).catch(() => caches.match(event.request)));
+});
+
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#006b73"><link rel="icon" href="icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css"><title>Espace QSE | SERINDUS</title>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-mark">S</span><span><strong>SERINDUS</strong><small>Espace QSE</small></span></a>
+    <a class="admin-link" href="index.html">Nouvelle remontée</a>
+  </header>
+  <main class="admin-main">
+    <section id="loginCard" class="card login-card">
+      <p class="eyebrow">ACCÈS RÉSERVÉ</p><h1>Espace administrateur QSE</h1>
+      <p>Entrez le code administrateur défini dans le fichier de configuration.</p>
+      <form id="loginForm"><label>Code d’accès<input id="adminCode" type="password" required></label><button class="primary" type="submit">Se connecter</button></form>
+      <p class="demo-note">Code de démonstration : <code>QSE2026</code>. À modifier avant diffusion.</p>
+    </section>
+    <section id="dashboard" hidden>
+      <div class="dashboard-head"><div><p class="eyebrow">PILOTAGE QSE</p><h1>Remontées terrain</h1></div><button id="logout" class="secondary">Déconnexion</button></div>
+      <div class="stats">
+        <article><span>Total</span><strong id="statTotal">0</strong></article>
+        <article><span>Nouvelles</span><strong id="statNew">0</strong></article>
+        <article class="red"><span>Priorité 1</span><strong id="statP1">0</strong></article>
+        <article class="orange"><span>À traiter</span><strong id="statOpen">0</strong></article>
+      </div>
+      <div class="card filters">
+        <label>Rechercher<input id="searchFilter" placeholder="Client, chantier, déclarant…"></label>
+        <label>Société<select id="companyFilter"><option value="">Toutes</option><option>SETIA</option><option>SASI</option><option>SIMEC</option><option>TILCO</option><option>RICOM</option><option>PROCESS</option><option>OBTEL</option></select></label>
+        <label>Priorité<select id="priorityFilter"><option value="">Toutes</option><option value="1">Priorité 1</option><option value="2">Priorité 2</option><option value="3">Priorité 3</option></select></label>
+        <button id="exportCsv" class="secondary">Exporter en CSV</button>
+      </div>
+      <div id="reportsList" class="reports-list"></div>
+      <div id="emptyState" class="card empty"><h2>Aucune remontée</h2><p>Les remontées envoyées apparaîtront ici.</p></div>
+    </section>
+  </main>
+  <dialog id="reportDialog"><button class="dialog-close" aria-label="Fermer">×</button><div id="reportDetail"></div></dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="config.js"></script><script src="admin.js"></script>
+</body>
+</html>
+
+const loginCard = document.querySelector("#loginCard");
+const dashboard = document.querySelector("#dashboard");
+const dialog = document.querySelector("#reportDialog");
+let reports = [];
+
+function toast(message) {
+  const node = document.querySelector("#toast"); node.textContent = message; node.classList.add("show");
+  setTimeout(() => node.classList.remove("show"), 3000);
+}
+function escapeHtml(value="") {
+  return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+document.querySelector("#loginForm").addEventListener("submit", event => {
+  event.preventDefault();
+  if (document.querySelector("#adminCode").value !== APP_CONFIG.adminCode) return toast("Code incorrect.");
+  sessionStorage.setItem("qse_admin", "1"); showDashboard();
+});
+document.querySelector("#logout").onclick = () => { sessionStorage.removeItem("qse_admin"); location.reload(); };
+if (sessionStorage.getItem("qse_admin")) showDashboard();
+
+async function showDashboard() {
+  loginCard.hidden = true; dashboard.hidden = false;
+  await loadReports(); render();
+}
+async function loadReports() {
+  if (APP_CONFIG.mode === "supabase") {
+    const headers = {"apikey": APP_CONFIG.supabaseAnonKey, "Authorization": `Bearer ${APP_CONFIG.supabaseAnonKey}`};
+    const response = await fetch(`${APP_CONFIG.supabaseUrl}/rest/v1/reports?select=*&order=created_at.desc`, {headers});
+    if (!response.ok) return toast("Impossible de charger les remontées.");
+    reports = await response.json();
+  } else reports = JSON.parse(localStorage.getItem("qse_reports") || "[]");
+}
+function filtered() {
+  const q = document.querySelector("#searchFilter").value.toLowerCase();
+  const company = document.querySelector("#companyFilter").value;
+  const priority = document.querySelector("#priorityFilter").value;
+  return reports.filter(r => {
+    const haystack = [r.reference,r.reporter_name,r.client_name,r.site_name,r.what].join(" ").toLowerCase();
+    return (!q || haystack.includes(q)) && (!company || r.company === company) && (!priority || String(r.priority) === priority);
+  });
+}
+function render() {
+  document.querySelector("#statTotal").textContent = reports.length;
+  document.querySelector("#statNew").textContent = reports.filter(r => r.status === "Nouvelle").length;
+  document.querySelector("#statP1").textContent = reports.filter(r => r.priority === 1).length;
+  document.querySelector("#statOpen").textContent = reports.filter(r => r.status !== "Clôturée").length;
+  const list = document.querySelector("#reportsList"), rows = filtered(); list.innerHTML = "";
+  document.querySelector("#emptyState").hidden = rows.length > 0;
+  rows.forEach(r => {
+    const article = document.createElement("article"); article.className = "report-card card";
+    article.innerHTML = `
+      <div class="report-top"><span class="badge priority-${r.priority}">Priorité ${r.priority}</span><span class="status">${escapeHtml(r.status)}</span></div>
+      <h2>${escapeHtml(r.event_type)}</h2><p class="report-ref">${escapeHtml(r.reference || r.id)}</p>
+      <p>${escapeHtml(r.what)}</p>
+      <div class="report-meta"><span>🏢 ${escapeHtml(r.company)} · ${escapeHtml(r.client_name)}</span><span>📍 ${escapeHtml(r.site_name)}</span><span>📅 ${new Date(r.created_at).toLocaleDateString("fr-FR")}</span></div>
+      <button class="secondary detail-button">Consulter</button>`;
+    article.querySelector("button").onclick = () => openReport(r);
+    list.append(article);
+  });
+}
+function openReport(r) {
+  document.querySelector("#reportDetail").innerHTML = `
+    <p class="eyebrow">${escapeHtml(r.reference || r.id)}</p><h1>${escapeHtml(r.event_type)}</h1>
+    <div class="detail-grid">
+      <div><b>Déclarant</b><span>${escapeHtml(r.reporter_name)} (${escapeHtml(r.company)})</span></div>
+      <div><b>Client / site</b><span>${escapeHtml(r.client_name)} – ${escapeHtml(r.site_name)}</span></div>
+      <div><b>Priorité</b><span>Priorité ${r.priority} (G${r.severity} × P${r.probability})</span></div>
+      <div><b>Danger présent</b><span>${r.danger_present ? "Oui" : "Non"}</span></div>
+    </div>
+    <h3>Constat</h3><p>${escapeHtml(r.what)}</p><p>${escapeHtml(r.how)}</p>
+    <h3>Actions immédiates</h3><p>${escapeHtml(r.action_details)}</p>
+    <h3>Proposition d’amélioration</h3><p>${escapeHtml(r.improvement_proposal || "Non renseignée")}</p>
+    <label>Statut<select id="statusEdit"><option>Nouvelle</option><option>Analyse en cours</option><option>Action à réaliser</option><option>En attente de vérification</option><option>Clôturée</option></select></label>
+    <button class="primary" id="saveStatus">Enregistrer le statut</button>`;
+  document.querySelector("#statusEdit").value = r.status;
+  document.querySelector("#saveStatus").onclick = () => updateStatus(r, document.querySelector("#statusEdit").value);
+  dialog.showModal();
+}
+async function updateStatus(report, status) {
+  report.status = status;
+  if (APP_CONFIG.mode === "supabase") {
+    const response = await fetch(`${APP_CONFIG.supabaseUrl}/rest/v1/reports?id=eq.${report.id}`, {
+      method:"PATCH", headers:{"apikey":APP_CONFIG.supabaseAnonKey,"Authorization":`Bearer ${APP_CONFIG.supabaseAnonKey}`,"Content-Type":"application/json"}, body:JSON.stringify({status})
+    });
+    if (!response.ok) return toast("Modification impossible.");
+  } else localStorage.setItem("qse_reports", JSON.stringify(reports));
+  dialog.close(); render(); toast("Statut mis à jour.");
+}
+document.querySelector(".dialog-close").onclick = () => dialog.close();
+["searchFilter","companyFilter","priorityFilter"].forEach(id => document.querySelector(`#${id}`).addEventListener("input", render));
+document.querySelector("#exportCsv").onclick = () => {
+  const cols = ["reference","created_at","company","client_name","site_name","event_type","priority","status","reporter_name","what","action_details"];
+  const quote = v => `"${String(v ?? "").replaceAll('"','""')}"`;
+  const csv = [cols.join(";"), ...filtered().map(r => cols.map(c => quote(r[c])).join(";"))].join("\n");
+  const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv"}));
+  link.download = "remontees-terrain.csv"; link.click(); URL.revokeObjectURL(link.href);
+};
+
+const form = document.querySelector("#reportForm");
+const pages = [...document.querySelectorAll(".form-page")];
+const stepItems = [...document.querySelectorAll(".steps li")];
+const prevButton = document.querySelector("#prevButton");
+const nextButton = document.querySelector("#nextButton");
+const photosInput = document.querySelector("#photos");
+const preview = document.querySelector("#photoPreview");
+let page = 1;
+let selectedPhotos = [];
+
+const riskMap = {
+  "1-1":3,"1-2":3,"1-3":3,"1-4":3,
+  "2-1":3,"2-2":2,"2-3":2,"2-4":2,
+  "3-1":3,"3-2":2,"3-3":1,"3-4":1,
+  "4-1":2,"4-2":2,"4-3":1,"4-4":1
+};
+
+function toast(message) {
+  const node = document.querySelector("#toast");
+  node.textContent = message; node.classList.add("show");
+  setTimeout(() => node.classList.remove("show"), 3000);
+}
+
+function showPage(next) {
+  page = next;
+  pages.forEach((p, i) => p.classList.toggle("active", i === page - 1));
+  stepItems.forEach((s, i) => {
+    s.classList.toggle("active", i === page - 1);
+    s.classList.toggle("done", i < page - 1);
+  });
+  prevButton.hidden = page === 1;
+  nextButton.hidden = page === pages.length;
+  if (page === 5) buildSummary();
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+function validatePage() {
+  const required = [...pages[page - 1].querySelectorAll("[required]")];
+  for (const field of required) {
+    if (!field.checkValidity()) {
+      field.reportValidity();
+      return false;
+    }
+  }
+  if (page === 2 && selectedPhotos.length === 0 && !form.photo_forbidden.checked) {
+    toast("Ajoutez une photo ou indiquez pourquoi elle est impossible.");
+    return false;
+  }
+  return true;
+}
+
+nextButton.addEventListener("click", () => validatePage() && showPage(page + 1));
+prevButton.addEventListener("click", () => showPage(page - 1));
+document.querySelector("#photoButton").addEventListener("click", () => photosInput.click());
+
+photosInput.addEventListener("change", () => {
+  selectedPhotos = [...photosInput.files].slice(0, 5);
+  if (photosInput.files.length > 5) toast("Seules les 5 premières photos seront conservées.");
+  renderPhotos();
+});
+
+function renderPhotos() {
+  preview.innerHTML = "";
+  selectedPhotos.forEach((file, index) => {
+    const item = document.createElement("div");
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file); img.alt = `Photo ${index + 1}`;
+    const remove = document.createElement("button");
+    remove.type = "button"; remove.textContent = "×"; remove.ariaLabel = "Supprimer";
+    remove.onclick = () => { selectedPhotos.splice(index, 1); renderPhotos(); };
+    item.append(img, remove); preview.append(item);
+  });
+}
+
+function calculateRisk() {
+  const s = form.severity.value, p = form.probability.value;
+  const result = document.querySelector("#riskResult");
+  document.querySelectorAll(".matrix-cell").forEach(c => c.classList.remove("selected"));
+  if (!s || !p) {
+    result.className = "risk-result neutral";
+    result.querySelector("strong").textContent = "À calculer";
+    result.querySelector("small").textContent = "Sélectionnez les deux critères.";
+    return null;
+  }
+  const priority = riskMap[`${s}-${p}`];
+  result.className = `risk-result priority-${priority}`;
+  result.querySelector("strong").textContent = `Priorité ${priority}`;
+  result.querySelector("small").textContent = priority === 1 ? "Traitement urgent" : priority === 2 ? "Action rapide à programmer" : "À surveiller / améliorer";
+  document.querySelector(`.matrix-cell[data-key="${s}-${p}"]`)?.classList.add("selected");
+  return priority;
+}
+
+function buildMatrix() {
+  const grid = document.querySelector("#matrixGrid");
+  for (let severity = 4; severity >= 1; severity--) {
+    for (let probability = 1; probability <= 4; probability++) {
+      const priority = riskMap[`${severity}-${probability}`];
+      const cell = document.createElement("span");
+      cell.className = `matrix-cell priority-${priority}`;
+      cell.dataset.key = `${severity}-${probability}`;
+      cell.textContent = priority;
+      cell.title = `Gravité ${severity}, probabilité ${probability}, priorité ${priority}`;
+      grid.append(cell);
+    }
+  }
+}
+form.severity.addEventListener("change", calculateRisk);
+form.probability.addEventListener("change", calculateRisk);
+buildMatrix();
+
+function values() {
+  const data = Object.fromEntries(new FormData(form).entries());
+  data.immediate_actions = [...form.querySelectorAll('[name="immediate_actions"]:checked')].map(x => x.value);
+  data.severity = Number(data.severity); data.probability = Number(data.probability);
+  data.priority = calculateRisk(); data.danger_present = data.danger_present === "true";
+  data.created_at = new Date().toISOString();
+  return data;
+}
+
+function escapeHtml(value="") {
+  return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function buildSummary() {
+  const d = values();
+  document.querySelector("#summary").innerHTML = `
+    <dl>
+      <div><dt>Déclarant</dt><dd>${escapeHtml(d.reporter_name)} – ${escapeHtml(d.company)}</dd></div>
+      <div><dt>Lieu</dt><dd>${escapeHtml(d.client_name)} / ${escapeHtml(d.site_name)}</dd></div>
+      <div><dt>Type</dt><dd>${escapeHtml(d.event_type)}</dd></div>
+      <div><dt>Constat</dt><dd>${escapeHtml(d.what)}</dd></div>
+      <div><dt>Photos</dt><dd>${selectedPhotos.length || "Aucune (justifié)"}</dd></div>
+      <div><dt>Évaluation</dt><dd>Gravité ${d.severity} × Probabilité ${d.probability} — <b>Priorité ${d.priority}</b></dd></div>
+      <div><dt>Actions</dt><dd>${escapeHtml(d.action_details)}</dd></div>
+      <div><dt>Danger présent</dt><dd>${d.danger_present ? "Oui" : "Non"}</dd></div>
+    </dl>`;
+}
+
+async function compressImage(file) {
+  const image = await createImageBitmap(file);
+  const max = 1600, ratio = Math.min(1, max / Math.max(image.width, image.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(image.width * ratio); canvas.height = Math.round(image.height * ratio);
+  canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+  return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", .78));
+}
+
+async function saveDemo(data) {
+  const reports = JSON.parse(localStorage.getItem("qse_reports") || "[]");
+  const year = new Date().getFullYear();
+  data.id = crypto.randomUUID();
+  data.reference = `RT-${data.company}-${year}-${String(reports.length + 1).padStart(4, "0")}`;
+  data.status = "Nouvelle";
+  data.photo_names = selectedPhotos.map(p => p.name);
+  reports.unshift(data);
+  localStorage.setItem("qse_reports", JSON.stringify(reports));
+  return data.reference;
+}
+
+async function saveSupabase(data) {
+  const headers = {"apikey": APP_CONFIG.supabaseAnonKey, "Authorization": `Bearer ${APP_CONFIG.supabaseAnonKey}`};
+  const reportId = crypto.randomUUID();
+  const paths = [];
+  for (let i = 0; i < selectedPhotos.length; i++) {
+    const blob = await compressImage(selectedPhotos[i]);
+    const path = `${reportId}/${i + 1}.jpg`;
+    const upload = await fetch(`${APP_CONFIG.supabaseUrl}/storage/v1/object/report-photos/${path}`, {
+      method: "POST", headers: {...headers, "Content-Type": "image/jpeg", "x-upsert": "false"}, body: blob
+    });
+    if (!upload.ok) throw new Error("Échec de l’envoi d’une photo");
+    paths.push(path);
+  }
+  data.id = reportId; data.photo_paths = paths; data.status = "Nouvelle";
+  const response = await fetch(`${APP_CONFIG.supabaseUrl}/rest/v1/reports`, {
+    method: "POST", headers: {...headers, "Content-Type": "application/json", "Prefer": "return=representation"}, body: JSON.stringify(data)
+  });
+  if (!response.ok) throw new Error("Échec de l’enregistrement");
+  const [saved] = await response.json();
+  return saved.reference || reportId.slice(0, 8).toUpperCase();
+}
+
+form.addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!form.checkValidity()) return form.reportValidity();
+  const button = form.querySelector(".submit");
+  button.disabled = true; button.textContent = "Envoi en cours…";
+  try {
+    const reference = APP_CONFIG.mode === "supabase" ? await saveSupabase(values()) : await saveDemo(values());
+    form.hidden = true; document.querySelector(".steps").hidden = true; document.querySelector(".hero").hidden = true;
+    document.querySelector("#reportNumber").textContent = reference;
+    document.querySelector("#success").hidden = false;
+  } catch (error) {
+    toast(`${error.message}. Vérifiez la connexion et réessayez.`);
+  } finally {
+    button.disabled = false; button.textContent = "Envoyer la remontée";
+  }
+});
+
+document.querySelector("#newReport").addEventListener("click", () => location.reload());
+form.observed_at.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
