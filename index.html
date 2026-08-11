@@ -1,7 +1,175 @@
-window.APP_CONFIG = {
-  mode: "demo",
-  supabaseUrl: "REMPLACER_PAR_URL_SUPABASE",
-  supabaseAnonKey: "REMPLACER_PAR_CLE_ANON_SUPABASE",
-  adminCode: "QSE2026",
-  appName: "SERINDUS – Remontées terrain"
-};
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#006b73">
+  <meta name="description" content="Application SERINDUS de remontées terrain QSE">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Remontées terrain | SERINDUS</title>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Accueil">
+      <span class="brand-mark">S</span>
+      <span><strong>SERINDUS</strong><small>Remontées terrain QSE</small></span>
+    </a>
+    <a class="admin-link" href="admin.html">Espace QSE</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">FICHE PROGRÈS NUMÉRIQUE</p>
+      <h1>Signaler une situation terrain</h1>
+      <p>Idée d’amélioration, situation dangereuse, non-conformité, réclamation ou bonne pratique.</p>
+    </section>
+
+    <ol class="steps" aria-label="Progression">
+      <li class="active"><span>1</span><b>Contexte</b></li>
+      <li><span>2</span><b>Constat</b></li>
+      <li><span>3</span><b>Risque</b></li>
+      <li><span>4</span><b>Actions</b></li>
+      <li><span>5</span><b>Envoi</b></li>
+    </ol>
+
+    <form id="reportForm" novalidate>
+      <section class="form-page active" data-page="1">
+        <div class="card">
+          <div class="section-title"><span>1</span><div><h2>Identification</h2><p>Informations sur le déclarant et le lieu.</p></div></div>
+          <div class="grid two">
+            <label>Nom et prénom <em>*</em><input name="reporter_name" autocomplete="name" required></label>
+            <label>Société <em>*</em>
+              <select name="company" required>
+                <option value="">Sélectionner</option><option>SETIA</option><option>SASI</option>
+                <option>SIMEC</option><option>TILCO</option><option>RICOM</option>
+                <option>PROCESS</option><option>OBTEL</option><option>Autre</option>
+              </select>
+            </label>
+            <label>Nom du client <em>*</em><input name="client_name" required></label>
+            <label>Chantier / site <em>*</em><input name="site_name" required></label>
+            <label class="wide">Zone précise<input name="location_detail" placeholder="Ex. nacelle, atelier, local électrique…"></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-page" data-page="2">
+        <div class="card">
+          <div class="section-title"><span>2</span><div><h2>Constat</h2><p>Décrivez ce que vous avez observé.</p></div></div>
+          <fieldset>
+            <legend>Type d’événement <em>*</em></legend>
+            <div class="choice-grid">
+              <label><input type="radio" name="event_type" value="Idée d’amélioration" required><span>💡 Idée d’amélioration</span></label>
+              <label><input type="radio" name="event_type" value="Situation dangereuse"><span>⚠️ Situation dangereuse</span></label>
+              <label><input type="radio" name="event_type" value="Non-conformité"><span>⛔ Non-conformité</span></label>
+              <label><input type="radio" name="event_type" value="Réclamation client"><span>💬 Réclamation client</span></label>
+              <label><input type="radio" name="event_type" value="Bonne pratique"><span>✅ Bonne pratique</span></label>
+              <label><input type="radio" name="event_type" value="Presqu’accident"><span>🛑 Presqu’accident</span></label>
+              <label><input type="radio" name="event_type" value="Environnement"><span>🌱 Environnement</span></label>
+              <label><input type="radio" name="event_type" value="Matériel défectueux"><span>🔧 Matériel défectueux</span></label>
+            </div>
+          </fieldset>
+          <div class="grid two">
+            <label>Qui est concerné ?<input name="who" placeholder="Personne, équipe, entreprise…"></label>
+            <label>Quand ?<input name="observed_at" type="datetime-local"></label>
+            <label class="wide">Quoi ? <em>*</em><textarea name="what" required placeholder="Décrivez précisément le fait observé"></textarea></label>
+            <label class="wide">Comment ?<textarea name="how" placeholder="Dans quelles circonstances ?"></textarea></label>
+          </div>
+          <div class="upload-box">
+            <label for="photos"><strong>Ajouter des photos</strong><small>Jusqu’à 5 photos. Elles seront compressées avant l’envoi.</small></label>
+            <input id="photos" name="photos" type="file" accept="image/*" capture="environment" multiple>
+            <button type="button" class="secondary" id="photoButton">📷 Prendre ou choisir des photos</button>
+            <div id="photoPreview" class="photo-preview"></div>
+            <label class="check"><input type="checkbox" name="photo_forbidden"><span>Photo impossible ou interdite par le client</span></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-page" data-page="3">
+        <div class="card">
+          <div class="section-title"><span>3</span><div><h2>Perception du risque</h2><p>Évaluez la gravité et la probabilité.</p></div></div>
+          <div class="grid two risk-inputs">
+            <label>Gravité <em>*</em>
+              <select name="severity" required>
+                <option value="">Sélectionner</option><option value="1">1 – Faible</option>
+                <option value="2">2 – Moyenne</option><option value="3">3 – Grave</option>
+                <option value="4">4 – Très grave</option>
+              </select>
+              <small>Conséquence potentielle si l’événement se produit.</small>
+            </label>
+            <label>Probabilité <em>*</em>
+              <select name="probability" required>
+                <option value="">Sélectionner</option><option value="1">1 – Très improbable</option>
+                <option value="2">2 – Improbable</option><option value="3">3 – Probable</option>
+                <option value="4">4 – Très probable</option>
+              </select>
+              <small>Possibilité que l’événement se produise ou se reproduise.</small>
+            </label>
+          </div>
+          <div id="riskResult" class="risk-result neutral">
+            <span>Priorité</span><strong>À calculer</strong><small>Sélectionnez les deux critères.</small>
+          </div>
+          <div class="matrix" aria-label="Matrice de risque 4 par 4">
+            <div class="matrix-label">Gravité ↑</div>
+            <div class="matrix-grid" id="matrixGrid"></div>
+            <div class="matrix-label bottom">Probabilité →</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-page" data-page="4">
+        <div class="card">
+          <div class="section-title"><span>4</span><div><h2>Actions et améliorations</h2><p>Précisez ce qui a été fait immédiatement.</p></div></div>
+          <fieldset>
+            <legend>Actions immédiates mises en place</legend>
+            <div class="checks">
+              <label><input type="checkbox" name="immediate_actions" value="Arrêt des travaux"><span>Arrêt des travaux</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Balisage / sécurisation"><span>Balisage / sécurisation</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Matériel mis hors service"><span>Matériel mis hors service</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Chef d’équipe informé"><span>Chef d’équipe informé</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Client informé"><span>Client informé</span></label>
+              <label><input type="checkbox" name="immediate_actions" value="Aucune action possible"><span>Aucune action possible</span></label>
+            </div>
+          </fieldset>
+          <div class="grid">
+            <label>Détail des actions immédiates <em>*</em><textarea name="action_details" required></textarea></label>
+            <label>Personne informée<input name="person_informed" placeholder="Nom ou fonction"></label>
+            <label class="danger-question">Le danger est-il toujours présent ? <em>*</em>
+              <select name="danger_present" required><option value="">Sélectionner</option><option value="true">Oui</option><option value="false">Non</option></select>
+            </label>
+            <label>Propositions d’amélioration<textarea name="improvement_proposal" placeholder="Quelle solution proposez-vous pour éviter la répétition ?"></textarea></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-page" data-page="5">
+        <div class="card">
+          <div class="section-title"><span>5</span><div><h2>Vérification et envoi</h2><p>Contrôlez les informations avant validation.</p></div></div>
+          <div id="summary" class="summary"></div>
+          <label class="check consent"><input type="checkbox" name="accuracy" required><span>Je confirme l’exactitude des informations transmises. <em>*</em></span></label>
+          <p class="privacy">Les données sont utilisées uniquement pour le traitement et le suivi des remontées QSE.</p>
+          <button class="primary submit" type="submit">Envoyer la remontée</button>
+        </div>
+      </section>
+
+      <div class="form-nav">
+        <button type="button" class="secondary" id="prevButton" hidden>Retour</button>
+        <button type="button" class="primary" id="nextButton">Continuer</button>
+      </div>
+    </form>
+
+    <section id="success" class="success card" hidden>
+      <div class="success-icon">✓</div>
+      <h2>Remontée enregistrée</h2>
+      <p>Merci pour votre contribution à la prévention.</p>
+      <div class="report-number" id="reportNumber"></div>
+      <button class="primary" id="newReport">Faire une autre remontée</button>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
