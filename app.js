@@ -110,11 +110,17 @@ buildMatrix();
 
 function values() {
   const data = Object.fromEntries(new FormData(form).entries());
-   delete data.accuracy;
+
+  delete data.accuracy;
+  delete data.photos;
+
   data.immediate_actions = [...form.querySelectorAll('[name="immediate_actions"]:checked')].map(x => x.value);
-  data.severity = Number(data.severity); data.probability = Number(data.probability);
-  data.priority = calculateRisk(); data.danger_present = data.danger_present === "true";
+  data.severity = Number(data.severity);
+  data.probability = Number(data.probability);
+  data.priority = calculateRisk();
+  data.danger_present = data.danger_present === "true";
   data.created_at = new Date().toISOString();
+
   return data;
 }
 
