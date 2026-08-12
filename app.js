@@ -158,7 +158,9 @@ async function saveDemo(data) {
 }
 
 async function saveSupabase(data) {
-  const headers = {"apikey": APP_CONFIG.supabaseAnonKey, "Authorization": `Bearer ${APP_CONFIG.supabaseAnonKey}`};
+  const headers = {
+  "apikey": APP_CONFIG.supabaseAnonKey
+};
   const reportId = crypto.randomUUID();
   const paths = [];
   for (let i = 0; i < selectedPhotos.length; i++) {
