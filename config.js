@@ -1,7 +1,7 @@
 window.APP_CONFIG = {
   mode: "supabase",
 
-  supabaseUrl: "https://ezbdniruyvlvzwinhxij.supabase.co",
+  supabaseUrl: "https://ezbdniruyvlvzwihnxij.supabase.co",
 
   supabaseAnonKey: "sb_publishable_nszkFGLAz4bWnHc2280HPQ_LPKNW9YR",
 
