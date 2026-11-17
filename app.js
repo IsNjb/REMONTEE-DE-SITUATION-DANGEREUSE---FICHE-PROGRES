@@ -184,8 +184,8 @@ async function saveSupabase(data) {
     method: "POST", headers: {...headers, "Content-Type": "application/json", "Prefer": "return=minimal"}, body: JSON.stringify(data)
   });
   if (!response.ok) throw new Error("Échec de l’enregistrement");
-  const [saved] = await response.json();
-  return saved.reference || reportId.slice(0, 8).toUpperCase();
+  
+return reportId.slice(0, 8).toUpperCase();
 }
 
 form.addEventListener("submit", async event => {
