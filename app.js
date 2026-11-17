@@ -181,7 +181,7 @@ async function saveSupabase(data) {
   }
   data.id = reportId; data.photo_paths = paths; data.status = "Nouvelle";
   const response = await fetch(`${APP_CONFIG.supabaseUrl}/rest/v1/reports`, {
-    method: "POST", headers: {...headers, "Content-Type": "application/json", "Prefer": "return=representation"}, body: JSON.stringify(data)
+    method: "POST", headers: {...headers, "Content-Type": "application/json", "Prefer": "return=minimal"}, body: JSON.stringify(data)
   });
   if (!response.ok) throw new Error("Échec de l’enregistrement");
   const [saved] = await response.json();
