@@ -173,7 +173,7 @@ async function saveSupabase(data) {
   for (let i = 0; i < selectedPhotos.length; i++) {
     const blob = await compressImage(selectedPhotos[i]);
     const path = `${reportId}/${i + 1}.jpg`;
-    const upload = await fetch(`${APP_CONFIG.supabaseUrl}/storage/v1/object/report-photos/${path}`, {
+    const upload = await fetch(`${APP_CONFIG.supabaseUrl}/storage/v1/object/photos-remontées/${path}`, {
       method: "POST", headers: {...headers, "Content-Type": "image/jpeg", "x-upsert": "false"}, body: blob
     });
     if (!upload.ok) throw new Error("Échec de l’envoi d’une photo");
