@@ -3,7 +3,7 @@ window.APP_CONFIG = {
 
  supabaseUrl: "https://bbbtybyqpcnangmmlrtg.supabase.co",
 
-  supabaseAnonKey: "sb_publishable_nszkFGLAz4bWnHc2280HPQ_LPKNW9YR",
+  supabaseAnonKey: "sb_publishable_F5USORM1MjYVYw08wBGDMQ_DrWfE5Fj",
 
   adminCode: "QSE2026",
 
